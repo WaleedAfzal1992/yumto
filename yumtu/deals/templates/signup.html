@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        /* Basic styles for the password strength indicator */
+        .strength-indicator {
+            margin-top: 5px;
+            font-size: 14px;
+            height: 20px; /* Ensures the height is consistent */
+        }
+        .weak {
+            color: red;
+        }
+        .medium {
+            color: orange;
+        }
+        .strong {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="navbar-container">
+                <a href="{% url 'index' %}" class="navbar-brand">My Website</a>
+                <div class="navbar-links">
+                    <a href="{% url 'signup' %}" class="nav-link">Sign Up</a>
+                    <a href="{% url 'login' %}" class="nav-link">Login</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main>
+        <section class="signup-section">
+            <div class="signup-container">
+                <h2>Sign Up</h2>
+                <form method="post" action="{% url 'signup' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" required oninput="checkPasswordStrength()">
+                        <div id="password-strength" class="strength-indicator"></div> <!-- Indicator for password strength -->
+                    </div>
+                    {% if request.session.signup_info %}
+                    <div class="form-group">
+                        <label for="otp">OTP:</label>
+                        <input type="text" id="otp" name="otp" required>
+                        <p>OTP valid for 5 minutes</p>
+                    </div>
+                    {% endif %}
+                    <button type="submit" class="btn-submit">Register</button>
+                </form>
+                {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                            <div class="message {{ message.tags }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function checkPasswordStrength() {
+            const password = document.getElementById('password').value;
+            const strengthIndicator = document.getElementById('password-strength');
+
+            let strength = '';
+            let colorClass = '';
+
+            // Simple password strength rules
+            const lengthCriteria = password.length >= 8; // Minimum length
+            const upperCaseCriteria = /[A-Z]/.test(password); // At least one uppercase letter
+            const lowerCaseCriteria = /[a-z]/.test(password); // At least one lowercase letter
+            const numberCriteria = /[0-9]/.test(password); // At least one number
+            const specialCharacterCriteria = /[!@#$%^&*(),.?":{}|<>]/.test(password); // At least one special character
+
+            const criteriaCount = [lengthCriteria, upperCaseCriteria, lowerCaseCriteria, numberCriteria, specialCharacterCriteria].filter(Boolean).length;
+
+            // Determine strength
+            if (criteriaCount < 3) {
+                strength = 'Weak';
+                colorClass = 'weak';
+            } else if (criteriaCount === 3) {
+                strength = 'Medium';
+                colorClass = 'medium';
+            } else {
+                strength = 'Strong';
+                colorClass = 'strong';
+            }
+
+            // Display strength
+            strengthIndicator.textContent = `Strength: ${strength}`;
+            strengthIndicator.className = `strength-indicator ${colorClass}`;
+        }
+    </script>
+</body>
+</html>
